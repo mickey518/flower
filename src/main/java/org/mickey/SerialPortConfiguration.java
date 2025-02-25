@@ -1,11 +1,13 @@
-package lab.dragon;
+package org.mickey;
 
 
-public class SerialPortConfig {
+import com.fazecast.jSerialComm.SerialPort;
+
+public class SerialPortConfiguration {
     /**
      * 端口名称
      */
-    private String commPortId;
+    private String portName;
     /**
      * 波特率
      */
@@ -26,17 +28,24 @@ public class SerialPortConfig {
     private Integer slaveId = 1;
     private Integer startIndex = 0;
 
-    public SerialPortConfig(String commPortId) {
-        this.commPortId = commPortId;
+    public SerialPortConfiguration() {
+
     }
 
-
-    public String getCommPortId() {
-        return commPortId;
+    public SerialPortConfiguration(String portName) {
+        this.portName = portName;
     }
 
-    public void setCommPortId(String commPortId) {
-        this.commPortId = commPortId;
+    public SerialPort getSerialPort() {
+        return SerialPort.getCommPort(this.portName);
+    }
+
+    public String getPortName() {
+        return portName;
+    }
+
+    public void setPortName(String portName) {
+        this.portName = portName;
     }
 
     public Integer getBaudRate() {

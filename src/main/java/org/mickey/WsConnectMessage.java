@@ -1,6 +1,4 @@
-package lab.dragon;
-
-import com.fasterxml.jackson.annotation.JsonRawValue;
+package org.mickey;
 
 public class WsConnectMessage {
 

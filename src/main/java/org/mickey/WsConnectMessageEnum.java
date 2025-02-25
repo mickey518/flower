@@ -1,4 +1,4 @@
-package lab.dragon;
+package org.mickey;
 
 import com.fasterxml.jackson.annotation.JsonRawValue;
 

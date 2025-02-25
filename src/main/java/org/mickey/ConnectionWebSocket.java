@@ -1,4 +1,4 @@
-package lab.dragon;
+package org.mickey;
 
 
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -8,10 +8,9 @@ import org.springframework.stereotype.Component;
 
 import javax.websocket.*;
 import javax.websocket.server.ServerEndpoint;
+import javax.xml.bind.DatatypeConverter;
 import java.io.IOException;
-import java.util.Map;
 import java.util.concurrent.*;
-import java.util.concurrent.locks.ReentrantReadWriteLock;
 
 
 @Component
@@ -21,7 +20,6 @@ public class ConnectionWebSocket {
      * websocket发送数据队列
      */
     public static final LinkedBlockingQueue<WsConnectMessage> SEND_MESSAGE_QUEUE = new LinkedBlockingQueue<>();
-    public static final ReentrantReadWriteLock lock = new ReentrantReadWriteLock();
     private final Logger log = LoggerFactory.getLogger(ConnectionWebSocket.class);
 
     /**
@@ -39,12 +37,6 @@ public class ConnectionWebSocket {
     private CompletableFuture<Void> SEND_MESSAGE_FUTURE;
 
     /**
-     * 报警信息代码映射表
-     */
-    private static Map<String, String> warnMessages;
-    private static boolean adjustment = false;
-
-    /**
      * 打开连接
      *
      * @param session websocket连接标识符
@@ -54,7 +46,15 @@ public class ConnectionWebSocket {
         log.info("[ws]创建一个连接：{}", session.getId());
 
         this.session = session;
-        servoModbusUtil = ModbusUtil.getModbusUtil("COM4");
+
+        SerialPortConfiguration serialPortConfiguration = new SerialPortConfiguration();
+        serialPortConfiguration.setPortName("COM4");
+        serialPortConfiguration.setBaudRate(9600);
+        try {
+            servoModbusUtil = ModbusUtil.getInstance(serialPortConfiguration);
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        }
 
         // 连上 websocket 时，监听 websocket 发送队列，有数据时发送到 socket 前端，session 关闭时，循环中断。
         SEND_MESSAGE_FUTURE = CompletableFuture.runAsync(() -> {
@@ -81,18 +81,10 @@ public class ConnectionWebSocket {
 
     }
 
-    /**
-     * 接收信息
-     *
-     * @param msg 接收到的消息，json格式，由 type 和 json 字符串两部分组成，例如："{"type": "command", "json": "{}"}"
-     */
-    @OnMessage
-    public void onMessage(String msg, Session session) {
-        log.info("[ws recv] session: {}, 收到消息 =》 {}", this.session.getId(), msg);
-    }
-
     private void writeQueryCommand() throws IOException {
-        servoModbusUtil.writeQueryCommand();
+        byte[] bytes = DatatypeConverter.parseHexBinary("010300000006C5C8");
+
+        servoModbusUtil.writeData(bytes);
     }
 
     /**
