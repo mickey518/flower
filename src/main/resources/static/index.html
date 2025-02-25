@@ -1,0 +1,196 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>土壤监测仪</title>
+    <style>
+        /* 页面样式 */
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f4f7f6;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            min-height: 100vh;
+            margin: 0;
+        }
+
+        h1 {
+            color: #333;
+            text-align: center;
+        }
+
+        /* 外部容器 */
+        .container {
+            max-width: 800px;
+            width: 100%;
+            padding: 20px;
+            background-color: #fff;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+            border-radius: 10px;
+            text-align: center;
+        }
+
+        /* 输入框样式 */
+        input[type="text"] {
+            width: 98%;
+            height: 40px;
+            padding: 1% 1% 1% 1%;
+            font-size: 16px;
+            border-radius: 5px;
+            border: 1px solid #ccc;
+            outline: none;
+            background-color: #f9f9f9;
+            color: #333;
+            transition: all 0.3s ease;
+        }
+
+        input[type="text"]:focus {
+            border-color: #66afe9;
+            box-shadow: 0 0 8px rgba(102, 175, 233, 0.6);
+        }
+
+        /* 按钮样式 */
+        button {
+            width: 40%;
+            height: 40px;
+            background-color: #4CAF50;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            font-size: 16px;
+            cursor: pointer;
+            transition: background-color 0.3s ease;
+            margin: 20px 0px;
+        }
+
+        #disconnectButton {
+            background-color: #db3615;
+        }
+
+        button:hover {
+            background-color: #45a049;
+        }
+
+        /* 日志区域样式 */
+        #log {
+            margin-top: 20px;
+            border: 1px solid #ccc;
+            height: 40px;
+            overflow-y: auto;
+            padding: 10px;
+            background-color: #f8f8f8;
+            border-radius: 5px;
+            text-align: left;
+            font-size: 14px;
+            color: #555;
+        }
+    </style>
+    <script>
+        document.addEventListener('DOMContentLoaded', function () {
+            let ws;
+            let wsUrl = "ws://127.0.0.1:8080/ws";
+            let wsConnected = false;
+
+            const elementWendu = document.getElementById("value-for-wendu");
+            const elementShidu = document.getElementById("value-for-shidu");
+            const elementPh = document.getElementById("value-for-ph");
+            const elementDan = document.getElementById("value-for-dan");
+            const elementLin = document.getElementById("value-for-lin");
+            const elementJia = document.getElementById("value-for-jia");
+
+            async function createWebSocketAsync() {
+                return new Promise((resolve, reject) => {
+
+                    ws = new WebSocket(wsUrl);
+
+                    ws.onopen = function () {
+                        wsConnected = true;
+                        resolve(wsConnected);
+                    };
+
+                    ws.onclose = function () {
+                        wsConnected = false;
+
+                        elementWendu.innerText = "";
+                    };
+
+                    ws.onerror = function (error) {
+                        logMessage("发生错误: " + error);
+                    };
+
+                    ws.onmessage = function (event) {
+                        logMessage(event.data);
+                        const jsonObject = JSON.parse(event.data);
+                        if (jsonObject["type"] === "data") {
+                            elementWendu.innerText = jsonObject["json"]["wendu"];
+                            elementShidu.innerText = jsonObject["json"]["shidu"];
+                            elementPh.innerText = jsonObject["json"]["ph"];
+                            elementDan.innerText = jsonObject["json"]["dan"];
+                            elementLin.innerText = jsonObject["json"]["lin"];
+                            elementJia.innerText = jsonObject["json"]["jia"];
+                        } else if (jsonObject["type"] === "log") {
+                            logMessage(jsonObject["json"]);
+                        }
+                    };
+                });
+            }
+
+            createWebSocketAsync();
+
+            // 显示日志信息
+            function logMessage(message) {
+                var log = document.getElementById('log');
+                log.innerHTML += message + '<br>';
+                log.scrollTop = log.scrollHeight; // 滚动到最新消息
+            }
+        });
+    </script>
+</head>
+
+<body>
+    <div class="container">
+        <h1>土壤监测仪</h1>
+
+        <div>
+            <div>
+                <label>温度</label>
+                <label id="value-for-wendu"></label>
+                <label>(℃)</label>
+            </div>
+            <div>
+                <label>湿度</label>
+                <label id="value-for-shidu"></label>
+                <label>(%)</label>
+            </div>
+            <div>
+                <label>PH值</label>
+                <label id="value-for-ph"></label>
+                <label></label>
+            </div>
+        </div>
+        <div>
+            <div>
+                <label>氮</label>
+                <label id="value-for-dan"></label>
+                <label>mg/kg</label>
+            </div>
+            <div>
+                <label>磷</label>
+                <label id="value-for-lin"></label>
+                <label>mg/kg</label>
+            </div>
+            <div>
+                <label>钾</label>
+                <label id="value-for-jia"></label>
+                <label>mg/kg</label>
+            </div>
+        </div>
+
+        <div id="log"></div>
+    </div>
+</body>
+
+</html>
