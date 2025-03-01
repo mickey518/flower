@@ -28,7 +28,7 @@ public class ModbusUtil implements AutoCloseable {
         if (!serialPort.openPort()) {
             throw new IOException("Failed to open serial port: " + config.getPortName());
         }
-        log.debug("打开 {} 端口成功", config.getPortName());
+        log.info("打开 {} 端口成功", config.getPortName());
         // 配置串口参数
         this.serialPort.setBaudRate(config.getBaudRate());
         this.serialPort.setNumDataBits(config.getDataBits());
@@ -66,7 +66,7 @@ public class ModbusUtil implements AutoCloseable {
             throw new IOException("Serial port is not open");
         }
         this.serialPort.writeBytes(data, data.length);
-        log.debug("send command: {}", ByteBufferProcessor.bytesToHex(data));
+        log.info("send command: {}", ByteBufferProcessor.bytesToHex(data));
     }
 
     private static class ByteBufferProcessor implements Runnable {

@@ -8,8 +8,8 @@ import org.springframework.stereotype.Component;
 
 import javax.websocket.*;
 import javax.websocket.server.ServerEndpoint;
-import javax.xml.bind.DatatypeConverter;
 import java.io.IOException;
+import java.util.HexFormat;
 import java.util.concurrent.*;
 
 
@@ -48,7 +48,7 @@ public class ConnectionWebSocket {
         this.session = session;
 
         SerialPortConfiguration serialPortConfiguration = new SerialPortConfiguration();
-        serialPortConfiguration.setPortName("COM4");
+        serialPortConfiguration.setPortName("COM5");
         serialPortConfiguration.setBaudRate(9600);
         try {
             servoModbusUtil = ModbusUtil.getInstance(serialPortConfiguration);
@@ -82,7 +82,8 @@ public class ConnectionWebSocket {
     }
 
     private void writeQueryCommand() throws IOException {
-        byte[] bytes = DatatypeConverter.parseHexBinary("010300000006C5C8");
+        HexFormat hexFormat = HexFormat.of();
+        byte[] bytes = hexFormat.parseHex("010300000006C5C8");
 
         servoModbusUtil.writeData(bytes);
     }
