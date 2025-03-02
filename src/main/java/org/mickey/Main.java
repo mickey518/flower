@@ -1,5 +1,6 @@
 package org.mickey;
 
+import com.fazecast.jSerialComm.SerialPort;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 
@@ -9,6 +10,9 @@ import java.io.IOException;
 public class Main {
     public static void main(String[] args) {
         SpringApplication.run(Main.class, args);
+
+        SerialPort[] commPorts = SerialPort.getCommPorts();
+        System.out.println(commPorts);
 
         // 自动打开网页
         String url = "http://127.0.0.1:8080/index.html";

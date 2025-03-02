@@ -6,40 +6,48 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Component;
 
-import javax.websocket.*;
+import javax.websocket.OnClose;
+import javax.websocket.OnError;
+import javax.websocket.OnOpen;
+import javax.websocket.Session;
 import javax.websocket.server.ServerEndpoint;
 import java.io.IOException;
 import java.util.HexFormat;
 import java.util.concurrent.*;
 
-
+/**
+ * WebSocket连接处理类，用于与客户端建立WebSocket连接并处理土壤传感器数据读取和消息发送。
+ */
 @Component
 @ServerEndpoint("/ws")
 public class ConnectionWebSocket {
     /**
-     * websocket发送数据队列
+     * websocket发送数据队列，用于存储待发送的消息对象，线程安全的阻塞队列。
      */
     public static final LinkedBlockingQueue<WsConnectMessage> SEND_MESSAGE_QUEUE = new LinkedBlockingQueue<>();
     private final Logger log = LoggerFactory.getLogger(ConnectionWebSocket.class);
 
     /**
-     * 当前websocket的session标识
+     * 当前websocket连接会话标识，用于管理当前连接的状态和通信。
      */
     private Session session;
     /**
-     * 伺服控制modbus模块
+     * 土壤传感器Modbus通信工具类实例，用于与土壤传感器进行Modbus协议通信。
      */
-    private ModbusUtil servoModbusUtil;
+    private ModbusUtil sensorModbusUtil;
     /**
-     * 读取数据的定时线程
+     * 定时发送土壤传感器ScheduledFuture对象，用于管理定时任务的生命周期。
      */
-    private ScheduledFuture<?> scheduledReadServoFuture;
+    private ScheduledFuture<?> scheduledSendReadCommandFuture;
+    /**
+     * 异步消息发送CompletableFuture对象，用于管理异步消息发送任务的生命周期。
+     */
     private CompletableFuture<Void> SEND_MESSAGE_FUTURE;
 
     /**
-     * 打开连接
+     * WebSocket连接打开时调用的方法，初始化传感器通信工具和定时任务。
      *
-     * @param session websocket连接标识符
+     * @param session 当前WebSocket连接会话
      */
     @OnOpen
     public void onOpen(Session session) {
@@ -47,16 +55,19 @@ public class ConnectionWebSocket {
 
         this.session = session;
 
+        // 初始化串口配置
         SerialPortConfiguration serialPortConfiguration = new SerialPortConfiguration();
         serialPortConfiguration.setPortName("COM5");
         serialPortConfiguration.setBaudRate(9600);
+
         try {
-            servoModbusUtil = ModbusUtil.getInstance(serialPortConfiguration);
+            sensorModbusUtil = ModbusUtil.getInstance(serialPortConfiguration);
         } catch (IOException e) {
-            throw new RuntimeException(e);
+            log.error("初始化传感器通信工具失败", e);
+            return;
         }
 
-        // 连上 websocket 时，监听 websocket 发送队列，有数据时发送到 socket 前端，session 关闭时，循环中断。
+        // 启动消息发送异步任务
         SEND_MESSAGE_FUTURE = CompletableFuture.runAsync(() -> {
             while (this.session.isOpen()) {
                 try {
@@ -70,7 +81,7 @@ public class ConnectionWebSocket {
 
 
         // 定时获取伺服控制器报警记录的定时线程
-        this.scheduledReadServoFuture = Executors.newSingleThreadScheduledExecutor().scheduleAtFixedRate(() -> {
+        this.scheduledSendReadCommandFuture = Executors.newSingleThreadScheduledExecutor().scheduleAtFixedRate(() -> {
             // 读取伺服报警记录
             try {
                 writeQueryCommand();
@@ -83,16 +94,12 @@ public class ConnectionWebSocket {
 
     private void writeQueryCommand() throws IOException {
         HexFormat hexFormat = HexFormat.of();
+
         byte[] bytes = hexFormat.parseHex("010300000006C5C8");
 
-        servoModbusUtil.writeData(bytes);
+        sensorModbusUtil.writeData(bytes);
     }
 
-    /**
-     * 接收错误信息
-     *
-     * @param throwable
-     */
     @OnError
     public void onError(Throwable throwable) throws IOException {
         log.error("websocket捕捉到异常，导致websocket关闭。异常信息：{}", throwable.getMessage(), throwable);
@@ -107,11 +114,11 @@ public class ConnectionWebSocket {
             this.SEND_MESSAGE_FUTURE.cancel(false);
         }
         // 关闭伺服获取数据参数定时线程
-        if (this.scheduledReadServoFuture != null) {
-            this.scheduledReadServoFuture.cancel(false);
+        if (this.scheduledSendReadCommandFuture != null) {
+            this.scheduledSendReadCommandFuture.cancel(false);
         }
-        if (this.servoModbusUtil != null) {
-            this.servoModbusUtil.close();
+        if (this.sensorModbusUtil != null) {
+            this.sensorModbusUtil.close();
         }
 
         try {

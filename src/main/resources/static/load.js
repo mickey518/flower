@@ -77,15 +77,15 @@ document.addEventListener('DOMContentLoaded', function () {
     function updateStatus() {
         // 温度检查
         checkSensorRange("temperature", sensorData.temperature,
-            [{min:15, max:30}, {min:20, max:25}], "温度");
+            [{min:15, max:30}], "温度");
 
         // 湿度检查
         checkSensorRange("humidity", sensorData.humidity,
-            [{min:50, max:70}, {min:40, max:60}], "湿度");
+            [{min:50, max:80}], "湿度");
 
         // PH值检查
         checkSensorRange("ph", sensorData.ph,
-            [{min:6.0, max:7.0}, {min:5.5, max:6.5}], "PH值");
+            [{min:5.5, max:7.5}], "PH值");
 
         // 氮含量检查
         checkSensorRange("nitrogen", sensorData.nitrogen,

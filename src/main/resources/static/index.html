@@ -35,6 +35,100 @@
             font-size: 2rem;
         }
 
+        .select-container {
+            margin: 2px 0;
+            padding: 5px 5px 1px 5px;
+            background-color: #f5f5f5;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+        }
+
+        .select-container label {
+            display: block;
+            margin-bottom: 8px;
+            font-family: Arial, sans-serif;
+            font-size: 16px;
+            color: #333;
+        }
+
+        .select-container select {
+            width: 100%;
+            padding: 8px 15px;
+            border: 2px solid #ddd;
+            border-radius: 4px;
+            background-color: white;
+            font-family: Arial, sans-serif;
+            font-size: 16px;
+            color: #333;
+            cursor: pointer;
+            appearance: none; /* 去掉默认的下拉箭头 */
+            -webkit-appearance: none;
+            -moz-appearance: none;
+        }
+
+        /* 自定义下拉箭头 */
+        .select-container select::-ms-expand {
+            display: none;
+        }
+
+        .select-container select::after {
+            content: "▼";
+            position: absolute;
+            right: 10px;
+            top: 50%;
+            transform: translateY(-50%);
+            color: #666;
+        }
+
+        .select-container select:focus {
+            outline: none;
+            border-color: #007bff;
+            box-shadow: 0 0 0 2px rgba(0, 123, 255, 0.25);
+        }
+
+        /* 自定义 option 样式 */
+        .select-container select option {
+            background-color: #999999;
+            color: white;
+            padding: 8px 15px;
+            font-size: 14px;
+            border: none;
+            cursor: pointer;
+        }
+
+        /* 鼠标悬停时的样式 */
+        .select-container select option:hover {
+            background-color: #f5f5f5;
+        }
+
+        /* Style for selected option */
+        .select-container select option:checked {
+            background-color: #007bff;
+        }
+
+        /* Style for hover effect on options */
+        .select-container select option:hover:not(:checked) {
+            background-color: #f8f9fa;
+        }
+
+        /* Custom scrollbar styling */
+        .select-container select::-webkit-scrollbar {
+            width: 12px;
+        }
+
+        .select-container select::-webkit-scrollbar-track {
+            background: #f5f5f5;
+        }
+
+        .select-container select::-webkit-scrollbar-thumb {
+            background: #ddd;
+            border-radius: 6px;
+        }
+
+        .select-container select::-webkit-scrollbar-thumb:hover {
+            background: #999;
+        }
+
         /* 传感器区域样式 */
         .sensor-container {
             display: grid;
@@ -176,6 +270,15 @@
 <div class="container">
     <h1>土壤监测与植物指南</h1>
 
+    <div class="select-container">
+        <label>
+            <select id="select-port">
+                <option value="COM5">COM5</option>
+                <option value="COM1">COM1</option>
+            </select>
+        </label>
+    </div>
+
     <!-- 传感器区域 -->
     <div class="sensor-container">
         <!-- 温度传感器 -->
@@ -227,41 +330,57 @@
             <div class="status-indicator" id="potassium-status"></div>
         </div>
     </div>
-    <div id="plant-guide"></div>
+
     <!-- 植物参考指南 -->
     <div>
         <h2 class="guide-title">植物土壤指南</h2>
 
         <div class="plant-reference-guide">
             <div class="plant-info">
-                <div class="plant-name">蔬菜类</div>
+
                 <div class="parameter-container">
+                    <div class="plant-name">玫瑰花</div>
                     <div class="parameter-label">适宜温度</div>
-                    <div class="parameter-value">15°C - 30°C</div>
+                    <div class="parameter-value">15°C - 25°C</div>
                     <div class="parameter-label">适宜湿度</div>
                     <div class="parameter-value">50% - 70%</div>
                     <div class="parameter-label">适宜pH值</div>
-                    <div class="parameter-value">6.0 - 7.0</div>
+                    <div class="parameter-value">6.0 - 6.5</div>
                 </div>
             </div>
 
             <div class="plant-info">
-                <div class="plant-name">水果类</div>
+
                 <div class="parameter-container">
+                    <div class="plant-name">绿萝</div>
                     <div class="parameter-label">适宜温度</div>
-                    <div class="parameter-value">18°C - 28°C</div>
+                    <div class="parameter-value">18°C - 24°C</div>
                     <div class="parameter-label">适宜湿度</div>
-                    <div class="parameter-value">60% - 80%</div>
+                    <div class="parameter-value">40% - 60%</div>
+                    <div class="parameter-label">适宜pH值</div>
+                    <div class="parameter-value">6.1 - 6.5</div>
+                </div>
+            </div>
+
+            <div class="plant-info">
+
+                <div class="parameter-container">
+                    <div class="plant-name">茉莉花</div>
+                    <div class="parameter-label">适宜温度</div>
+                    <div class="parameter-value">18°C - 25°C</div>
+                    <div class="parameter-label">适宜湿度</div>
+                    <div class="parameter-value">50% - 80%</div>
                     <div class="parameter-label">适宜pH值</div>
                     <div class="parameter-value">6.0 - 7.5</div>
                 </div>
             </div>
 
             <div class="plant-info">
-                <div class="plant-name">草药类</div>
+
                 <div class="parameter-container">
+                    <div class="plant-name">满天星</div>
                     <div class="parameter-label">适宜温度</div>
-                    <div class="parameter-value">10°C - 25°C</div>
+                    <div class="parameter-value">15°C - 22°C</div>
                     <div class="parameter-label">适宜湿度</div>
                     <div class="parameter-value">40% - 60%</div>
                     <div class="parameter-label">适宜pH值</div>
@@ -270,14 +389,15 @@
             </div>
 
             <div class="plant-info">
-                <div class="plant-name">花卉类</div>
+
                 <div class="parameter-container">
+                    <div class="plant-name">红掌</div>
                     <div class="parameter-label">适宜温度</div>
-                    <div class="parameter-value">15°C - 25°C</div>
+                    <div class="parameter-value">18°C - 24°C</div>
                     <div class="parameter-label">适宜湿度</div>
-                    <div class="parameter-value">50% - 70%</div>
+                    <div class="parameter-value">60% - 80%</div>
                     <div class="parameter-label">适宜pH值</div>
-                    <div class="parameter-value">6.0 - 7.5</div>
+                    <div class="parameter-value">5.5 - 6.5</div>
                 </div>
             </div>
         </div>
